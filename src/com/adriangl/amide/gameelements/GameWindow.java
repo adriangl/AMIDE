@@ -1,5 +1,10 @@
 package com.adriangl.amide.gameelements;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.lwjgl.LWJGLException;
@@ -11,6 +16,11 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
+import testlwjgl.ObjLoader;
+import testlwjgl.ObjModel;
+import testlwjgl.Texture;
+import testlwjgl.TextureLoader;
+
 public class GameWindow {
 	
 	public static final String GAME_TITLE = "Asteroid Attack";
@@ -18,12 +28,20 @@ public class GameWindow {
 	public static int SCREEN_HEIGHT = 600;
 	
 	// Last timestamp when the loop was executed
-	private long lastLoop;
+	private long lastLoop = 0;
 	
 	// Checks if the game must be closed or not
 	public boolean finished = false;
 	
-	public static void main (String[] args){
+	// Game elements
+	private ArrayList<GameElement> elementList = new ArrayList<GameElement>();
+	
+	// Textures and models
+	private TextureLoader loader = new TextureLoader();
+	Texture asteroidTexture;
+	ObjModel asteroidModel;
+	
+	public static void main (String[] args) throws InterruptedException{
 		GameWindow gw = new GameWindow();
 		gw.runGame();
 	}
@@ -33,11 +51,33 @@ public class GameWindow {
 			// Configure and create the LWJGL display			
 			initDisplay();
 			initGL();
+			initTextures();
+			initModels();
+			Keyboard.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
 			Sys.alert("Error", "Failed: "+e.getMessage());
 		}
 		
+	}
+
+	private void initModels() {
+		try {
+			asteroidModel = ObjLoader.loadObj("asteroid.obj");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void initTextures() {
+		
+		try {
+			asteroidTexture = loader.getTexture("asteroid.jpg");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 
 	private void initGL() {
@@ -78,12 +118,21 @@ public class GameWindow {
 	 */
 	
 	private void runGame(){
+		
+		for (int i = 0; i<10; i++){
+			Asteroid a = new Asteroid(asteroidTexture, asteroidModel, (float) (-20 + (Math.random() * 40)), (float) (-20 + (Math.random() * 40)), 3);
+			elementList.add(a);
+		}
+		
+		lastLoop = System.currentTimeMillis();
+		
 		while (!finished){
 			// Clear screen
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+			GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			
 			// Get difference and current time in millis
-			int delta = (int) (Calendar.getInstance().getTimeInMillis() - lastLoop);
+			int delta = (int) (System.currentTimeMillis() - lastLoop);
 			lastLoop = Calendar.getInstance().getTimeInMillis();
 			
 			// checks several window states to see what we do
@@ -92,11 +141,11 @@ public class GameWindow {
 			}
 			else if (Display.isActive()){
 				// TODO Add game logic to update and render game elements
-				updateElements(delta);
-				renderElements();
+				update(delta);
+				render();
 			}
 			else{
-				updateElements(delta);
+				update(delta);
 			}
 			// Screen update when every operation is finished.
 			Display.update();
@@ -105,21 +154,48 @@ public class GameWindow {
 		// when the game is finished, we clean up alll the resources used.
 		cleanupGame();
 	}
+	
+
 	/**
 	 * Updates all the game elements, based on the delta value
 	 * @param delta Time increment
 	 */
-	private void updateElements(int delta) {
-		// TODO Add update logic for all elements
+	private void update(int delta) {
 		
+		for (GameElement element: elementList){
+			for (GameElement other: elementList){
+				if (!element.equals(other) && element.collides(other)){
+					element.collide(other);
+				}
+			}
+			element.update(delta);
+		}
 	}
 	
 	/**
 	 * Renders elements on screen
 	 */
-	private void renderElements() {
+	private void render() {
 		// TODO Add render logic for all elements
+		 
+		GL11.glLoadIdentity();
+		GL11.glDisable(GL11.GL_LIGHTING);
+		renderBackground();
+		renderElements();
+	}
+
+	private void renderBackground() {
+		// TODO Add background
 		
+	}
+
+	private void renderElements() {
+		GL11.glEnable(GL11.GL_LIGHTING);
+		GL11.glEnable(GL11.GL_LIGHT0);
+		GL11.glTranslatef(0,0,-50);
+		for (GameElement element: elementList){
+			element.render();
+		}
 	}
 
 	/**

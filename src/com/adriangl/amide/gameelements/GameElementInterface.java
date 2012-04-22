@@ -22,24 +22,24 @@ public interface GameElementInterface {
 	 * Returns the x coordinate of the selected element.
 	 * @return Element's x coordinate.
 	 */
-	public long getX();
+	public float getX();
 	
 	/**
 	 * Returns the y coordinate of the selected element.
 	 * @return Element's y coordinate.
 	 */
-	public long getY();
+	public float getY();
 	
 	/**
 	 * Checks if the current element has collided with another element.
 	 * @return True if the elements have collided, false otherwise.
 	 */
-	public boolean collides(GameElement other);
+	public boolean collides(GameElementInterface other);
 	
 	/**
 	 * Actions to take if the element has collided with others.
 	 */
-	public void collide();
+	public void collide(GameElementInterface other);
 	
 	/**
 	 * Method which returns the radius of the element.

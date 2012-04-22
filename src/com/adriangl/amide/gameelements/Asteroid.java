@@ -2,73 +2,74 @@ package com.adriangl.amide.gameelements;
 
 import org.lwjgl.opengl.GL11;
 
-public class Asteroid extends GameElement{
+import testlwjgl.ObjModel;
+import testlwjgl.Texture;
 
-	@Override
-	public void update(int delta) {
-		// TODO Auto-generated method stub
-		
+
+public class Asteroid extends GameElement {
+	
+	private Texture texture;
+	private ObjModel model;
+
+	private float angle;
+	
+	private int size;
+	
+	public Asteroid(Texture texture, ObjModel model, float x, float y, int size) {
+		this(texture, model, x, y, size, (float) (-4 + (Math.random() * 8)), 
+	(float) (-4 + (Math.random() * 8)));
 	}
+	
+	public Asteroid(Texture texture, ObjModel model, float x, float y, int size, float vx, float vy) {
+		this.texture = texture;
+		this.model = model;
+		
+		this.speedX = vx;
+		this.speedY = vy;
+		this.x = x;
+		this.y = y;
 
+		this.size = size;
+	}
+	
+	public void update(int delta){
+		super.update(delta);
+		angle = (delta / 10.0f) * 1.5f;
+	}
+	
 	@Override
 	public void render() {
-		// enable lighting over the rock model
+		GL11.glEnable(GL11.GL_LIGHTING);
+		GL11.glPushMatrix();
 
-				GL11.glEnable(GL11.GL_LIGHTING);
-				
-				// store the original matrix setup so we can modify it
-
-				// without worrying about effecting things outside of this 
-
-				// class
-
-				GL11.glPushMatrix();
-
-				// position the model based on the players currently game
-
-				// location
-
-				GL11.glTranslatef(positionX,positionY,0);
-
-				// rotate the rock round to its current Z axis rotate
-
-				GL11.glRotatef(rotationZ,0,0,1);
-				
-				// scale the model based on the size of rock we're representing
-
-				GL11.glScalef(size, size, size);
-				
-				// bind the texture we want to apply to our rock and then
-
-				// draw the model 
-
-				texture.bind();
-				model.render();
-				
-				// restore the model matrix so we leave this method
-
-				// in the same state we entered
-
-				GL11.glPopMatrix();
+		// position the model based on the players currently game
+		// location
+		GL11.glTranslatef(x,y,0);
 		
+		// rotate the ship round to our current orientation for shooting
+		GL11.glRotatef(angle,0,0,1);
+			
+		// scale the model down because its way to big by default
+		GL11.glScalef(size, size, size);
+			
+		// bind to the texture for our model then render it. This 
+		// actually draws the geometry to the screen
+		texture.bind();
+		model.render();
+		
+		GL11.glPopMatrix();
 	}
 
 	@Override
-	public boolean collides(GameElement other) {
+	public void collide(GameElementInterface other) {
 		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void collide() {
-		// TODO Auto-generated method stub
-		
+		this.speedX = getX() - other.getX();
+		this.speedY = getY() - other.getY();
 	}
 
 	@Override
 	public float getSize() {
-		// TODO Auto-generated method stub
-		return 0;
+		return size * 0.5f;
 	}
 
 }
