@@ -12,6 +12,7 @@ public class Asteroid extends GameElement {
 	private ObjModel model;
 
 	private float angle;
+	private float rotateSpeed = (float)(Math.random()+1)-0.5f;
 	
 	private int size;
 	
@@ -34,7 +35,7 @@ public class Asteroid extends GameElement {
 	
 	public void update(int delta){
 		super.update(delta);
-		angle = (delta / 10.0f) * 1.5f;
+		angle += (delta / 10.0f) * rotateSpeed;
 	}
 	
 	@Override

@@ -119,7 +119,7 @@ public class GameWindow {
 	
 	private void runGame(){
 		
-		for (int i = 0; i<10; i++){
+		for (int i = 0; i<100; i++){
 			Asteroid a = new Asteroid(asteroidTexture, asteroidModel, (float) (-20 + (Math.random() * 40)), (float) (-20 + (Math.random() * 40)), 3);
 			elementList.add(a);
 		}
@@ -129,7 +129,7 @@ public class GameWindow {
 		while (!finished){
 			// Clear screen
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			GL11.glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
 			
 			// Get difference and current time in millis
 			int delta = (int) (System.currentTimeMillis() - lastLoop);
