@@ -1,5 +1,11 @@
 package com.adriangl.amide.gameelements;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import org.lwjgl.opengl.GL11;
 
 import testlwjgl.ObjModel;
@@ -14,14 +20,14 @@ public class Asteroid extends GameElement {
 	private float angle;
 	private float rotateSpeed = (float)(Math.random()+1)-0.5f;
 	
-	private int size;
+	private float size;
 	
-	public Asteroid(Texture texture, ObjModel model, float x, float y, int size) {
+	public Asteroid(Texture texture, ObjModel model, float x, float y, float size) {
 		this(texture, model, x, y, size, (float) (-4 + (Math.random() * 8)), 
 	(float) (-4 + (Math.random() * 8)));
 	}
 	
-	public Asteroid(Texture texture, ObjModel model, float x, float y, int size, float vx, float vy) {
+	public Asteroid(Texture texture, ObjModel model, float x, float y, float size, float vx, float vy) {
 		this.texture = texture;
 		this.model = model;
 		
@@ -31,6 +37,13 @@ public class Asteroid extends GameElement {
 		this.y = y;
 
 		this.size = size;
+	}
+	
+	public Asteroid (Texture texture, ObjModel model, float x, float y, float size, 
+			float angle, float rotateSpeed, float vx, float vy) {
+		this(texture, model, x ,y, size, vx, vy);
+		this.angle = angle;
+		this.rotateSpeed = rotateSpeed;
 	}
 	
 	public void update(int delta){
@@ -71,6 +84,68 @@ public class Asteroid extends GameElement {
 	@Override
 	public float getSize() {
 		return size * 0.5f;
+	}
+
+	@Override
+	public byte[] encode() {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(baos);
+        
+        try {
+			out.writeFloat(x);
+			out.writeFloat(y);
+	        out.writeFloat(size);
+	        out.writeFloat(angle);
+	        out.writeFloat(rotateSpeed);
+	        out.writeFloat(speedX);
+	        out.writeFloat(speedY);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        return baos.toByteArray();
+	}
+
+	@Override
+	public void decode(byte[] array) {
+		// Conversion de los bytes a DatoUdp
+        ByteArrayInputStream bais = new ByteArrayInputStream(array);
+        DataInputStream in = new DataInputStream(bais);
+        try {
+			while (in.available() > 0) {
+			    String element = in.readUTF();
+			    System.out.println(element);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+//		this.x = newX;
+//		this.y = newY;
+//		this.size = newSize;
+//		this.angle = newAngle;
+//		this.rotateSpeed = newRotateSpeed;
+//		this.speedX = newSpeedX;
+//		this.speedY = newSpeedY;
+	}
+	
+
+	public Texture getTexture() {
+		return texture;
+	}
+
+	public void setTexture(Texture texture) {
+		this.texture = texture;
+	}
+
+	public ObjModel getModel() {
+		return model;
+	}
+
+	public void setModel(ObjModel model) {
+		this.model = model;
 	}
 
 }

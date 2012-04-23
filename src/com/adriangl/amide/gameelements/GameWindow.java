@@ -1,10 +1,6 @@
 package com.adriangl.amide.gameelements;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.lwjgl.LWJGLException;
@@ -21,6 +17,9 @@ import testlwjgl.ObjModel;
 import testlwjgl.Texture;
 import testlwjgl.TextureLoader;
 
+import com.adriangl.amide.network.Client;
+import com.adriangl.amide.network.Server;
+
 public class GameWindow {
 	
 	public static final String GAME_TITLE = "Asteroid Attack";
@@ -34,12 +33,17 @@ public class GameWindow {
 	public boolean finished = false;
 	
 	// Game elements
-	private ArrayList<GameElement> elementList = new ArrayList<GameElement>();
+	private GameElementList elementList = new GameElementList();
 	
 	// Textures and models
 	private TextureLoader loader = new TextureLoader();
 	Texture asteroidTexture;
 	ObjModel asteroidModel;
+	Texture spaceShipTexture;
+	ObjModel spaceShipModel;
+	
+	// Checks if server
+	private static final boolean isServer = false;
 	
 	public static void main (String[] args) throws InterruptedException{
 		GameWindow gw = new GameWindow();
@@ -64,6 +68,7 @@ public class GameWindow {
 	private void initModels() {
 		try {
 			asteroidModel = ObjLoader.loadObj("asteroid.obj");
+			spaceShipModel = ObjLoader.loadObj("chocobo.obj");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -74,6 +79,7 @@ public class GameWindow {
 		
 		try {
 			asteroidTexture = loader.getTexture("asteroid.jpg");
+			spaceShipTexture = loader.getTexture("chocobo.jpg");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -118,13 +124,16 @@ public class GameWindow {
 	 */
 	
 	private void runGame(){
-		
-		for (int i = 0; i<100; i++){
-			Asteroid a = new Asteroid(asteroidTexture, asteroidModel, (float) (-20 + (Math.random() * 40)), (float) (-20 + (Math.random() * 40)), 3);
-			elementList.add(a);
-		}
+		addElements();
 		
 		lastLoop = System.currentTimeMillis();
+		
+		if(isServer){
+			(new Thread(new Server(elementList))).start();
+		}
+		else{
+			(new Thread(new Client(elementList))).start();
+		}
 		
 		while (!finished){
 			// Clear screen
@@ -146,6 +155,7 @@ public class GameWindow {
 			}
 			else{
 				update(delta);
+				render();
 			}
 			// Screen update when every operation is finished.
 			Display.update();
@@ -156,14 +166,27 @@ public class GameWindow {
 	}
 	
 
+	private void addElements() {
+		// Add asteroids
+		for (int i = 0; i<10; i++){
+			Asteroid a = new Asteroid(asteroidTexture, asteroidModel, (float) (-20 + (Math.random() * 40)), (float) (-20 + (Math.random() * 40)), 3f);
+			elementList.add(a);
+		}
+		// Add spaceship
+		Spaceship sp = new Spaceship(spaceShipTexture, spaceShipModel);
+		elementList.add(sp);
+		
+	}
+
 	/**
 	 * Updates all the game elements, based on the delta value
 	 * @param delta Time increment
 	 */
 	private void update(int delta) {
-		
-		for (GameElement element: elementList){
-			for (GameElement other: elementList){
+		for (int i = 0; i<elementList.size();i++){
+			GameElement element = elementList.get(i);
+			for (int j = 0; j<elementList.size();j++){
+				GameElement other = elementList.get(j);
 				if (!element.equals(other) && element.collides(other)){
 					element.collide(other);
 				}
@@ -193,7 +216,8 @@ public class GameWindow {
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glEnable(GL11.GL_LIGHT0);
 		GL11.glTranslatef(0,0,-50);
-		for (GameElement element: elementList){
+		for (int i=0; i<elementList.size();i++){
+			GameElement element = elementList.get(i);
 			element.render();
 		}
 	}

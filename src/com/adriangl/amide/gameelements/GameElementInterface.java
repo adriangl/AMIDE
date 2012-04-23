@@ -46,4 +46,9 @@ public interface GameElementInterface {
 	 * @return Radius of the element.
 	 */
 	public float getSize();
+	
+	public byte[] encode();
+	
+	public void decode(byte[] array);
+	
 }
