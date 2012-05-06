@@ -152,9 +152,13 @@ public class GameWindow {
 			Display.update();
 		}
 		
-		// when the game is finished, we clean up alll the resources used.
+		// when the game is finished, we clean up all the resources used.
 		cleanupGame();
-		System.exit(0);
+		
+		// close the game if the current instance is a server
+		if (isServer){
+			System.exit(0);
+		}
 	}
 	
 

@@ -2,6 +2,7 @@ package com.adriangl.amide.network;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -23,11 +24,14 @@ public class Server implements Runnable{
 	
 	private HashMap<SocketAddress, ArrayList<GameElement>> clientMap;
 	
-    DatagramPacket data = new DatagramPacket(new byte[280], 280);
+    DatagramPacket data = new DatagramPacket(new byte[284], 284);
     String elementData;
     
     Texture texture;
     ObjModel model;
+    
+    private static final int CLIENT_UPDATE = 1;
+    private static final int CLIENT_BYE = 2;
 	
 	public Server (GameElementList gameElements){
 		this.gameElements = gameElements;
@@ -79,55 +83,75 @@ public class Server implements Runnable{
     			ByteArrayInputStream bais = new ByteArrayInputStream(rawData);
     			DataInputStream in = new DataInputStream(bais);
     			
-    			int floatRead = 0;
-
-				float x = 0;
-				float y = 0;
-				float size = 0;
-				float angle = 0;
-				float speedX = 0;
-				float speedY = 0;
-				float rotateSpeed = 0;
-    			
-    			while (in.available() > 0) {
-    				float elementData = in.readFloat();
-    				
-    				switch (floatRead % 7){
-    				case 0:
-    					x = elementData;
-    					break;
-    				case 1:
-    					y = elementData;
-    					break;
-    				case 2:
-    					size = elementData;
-    					break;
-    				case 3:
-    					angle = elementData;
-    					break;
-    				case 4:
-    					speedX = elementData;
-    					break;
-    				case 5:
-    					speedY = elementData;
-    					break;
-    				case 6:
-    					rotateSpeed = elementData;
-    					Asteroid a = new Asteroid(texture, model, x,y,size,angle,speedX,speedY,rotateSpeed);
-    					gameElements.add(a);
-    					list.add(a);
-    					break;
-    				default:
-    					break;
-    				}
-    				floatRead++;
+    			switch((int)in.readFloat()){
+    			case 1:
+    				readAvailableData(in,list);
+    				break;
+    			case 2:
+    				break;
+    			default:
+    				break;
     			}
+    			in.close();
+    			bais.close();
                 //(new Thread(new ResponseHandler(gameElements, elementData))).start();
             }
         } catch (Exception e)
         {
             e.printStackTrace();
         }
+	}
+
+	private void readAvailableData(DataInputStream in, ArrayList<GameElement> list) {
+		// TODO Auto-generated method stub
+		int floatRead = 0;
+
+		float x = 0;
+		float y = 0;
+		float size = 0;
+		float angle = 0;
+		float speedX = 0;
+		float speedY = 0;
+		float rotateSpeed = 0;
+		
+		try {
+			while (in.available() > 0) {
+				float elementData = in.readFloat();
+				
+				switch (floatRead % 7){
+				case 0:
+					x = elementData;
+					break;
+				case 1:
+					y = elementData;
+					break;
+				case 2:
+					size = elementData;
+					break;
+				case 3:
+					angle = elementData;
+					break;
+				case 4:
+					speedX = elementData;
+					break;
+				case 5:
+					speedY = elementData;
+					break;
+				case 6:
+					rotateSpeed = elementData;
+					Asteroid a = new Asteroid(texture, model, x,y,size,angle,speedX,speedY,rotateSpeed);
+					gameElements.add(a);
+					list.add(a);
+					break;
+				default:
+					break;
+				}
+				floatRead++;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
