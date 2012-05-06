@@ -43,14 +43,10 @@ public class GameWindow {
 	ObjModel spaceShipModel;
 	
 	// Checks if server
-	private static final boolean isServer = false;
+	private boolean isServer;
 	
-	public static void main (String[] args) throws InterruptedException{
-		GameWindow gw = new GameWindow();
-		gw.runGame();
-	}
-	
-	public GameWindow(){
+	public GameWindow(boolean isServer){
+		this.isServer = isServer;
 		try {				
 			// Configure and create the LWJGL display			
 			initDisplay();
@@ -123,7 +119,7 @@ public class GameWindow {
 	 * Runs the game loop
 	 */
 	
-	private void runGame(){
+	public void runGame(){
 		addElements();
 		
 		lastLoop = System.currentTimeMillis();
@@ -148,11 +144,6 @@ public class GameWindow {
 			if (Display.isCloseRequested()){
 				finished = true;
 			}
-			else if (Display.isActive()){
-				// TODO Add game logic to update and render game elements
-				update(delta);
-				render();
-			}
 			else{
 				update(delta);
 				render();
@@ -163,19 +154,22 @@ public class GameWindow {
 		
 		// when the game is finished, we clean up alll the resources used.
 		cleanupGame();
+		System.exit(0);
 	}
 	
 
 	private void addElements() {
 		// Add asteroids
 		for (int i = 0; i<10; i++){
-			Asteroid a = new Asteroid(asteroidTexture, asteroidModel, (float) (-20 + (Math.random() * 40)), (float) (-20 + (Math.random() * 40)), 3f);
+			Asteroid a = new Asteroid(asteroidTexture, asteroidModel, 
+					(float) (-20 + (Math.random() * 40)), (float) (-20 + (Math.random() * 40)), 3f);
 			elementList.add(a);
 		}
 		// Add spaceship
-		Spaceship sp = new Spaceship(spaceShipTexture, spaceShipModel);
-		elementList.add(sp);
-		
+		if (isServer){
+			Spaceship sp = new Spaceship(spaceShipTexture, spaceShipModel);
+			elementList.add(sp);
+		}
 	}
 
 	/**

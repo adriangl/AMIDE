@@ -16,7 +16,7 @@ public class Client implements Runnable{
 	
 	GameElementList gameElements;
 	
-	public static final int CLIENT_PORT = 2348;
+	public static final int CLIENT_PORT = (int)(10000*Math.random());
 	public static final int SERVER_PORT = 1234;
 	
 	public Client (GameElementList gameElements){
