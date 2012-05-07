@@ -7,6 +7,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
@@ -17,6 +18,7 @@ import testlwjgl.ObjModel;
 import testlwjgl.Texture;
 import testlwjgl.TextureLoader;
 
+import com.adriangl.amide.constants.Constants;
 import com.adriangl.amide.network.Client;
 import com.adriangl.amide.network.Server;
 
@@ -35,13 +37,6 @@ public class GameWindow {
 	// Game elements
 	private GameElementList elementList = new GameElementList();
 	
-	// Textures and models
-	private TextureLoader loader = new TextureLoader();
-	Texture asteroidTexture;
-	ObjModel asteroidModel;
-	Texture spaceShipTexture;
-	ObjModel spaceShipModel;
-	
 	// Checks if server
 	private boolean isServer;
 	
@@ -51,8 +46,7 @@ public class GameWindow {
 			// Configure and create the LWJGL display			
 			initDisplay();
 			initGL();
-			initTextures();
-			initModels();
+			initAssets();
 			Keyboard.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
@@ -61,25 +55,8 @@ public class GameWindow {
 		
 	}
 
-	private void initModels() {
-		try {
-			asteroidModel = ObjLoader.loadObj("asteroid.obj");
-			spaceShipModel = ObjLoader.loadObj("chocobo.obj");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void initTextures() {
-		
-		try {
-			asteroidTexture = loader.getTexture("asteroid.jpg");
-			spaceShipTexture = loader.getTexture("chocobo.jpg");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+	private void initAssets() {
+		AssetsProvider.loadData();
 	}
 
 	private void initGL() {
@@ -145,8 +122,10 @@ public class GameWindow {
 				finished = true;
 			}
 			else{
-				update(delta);
-				render();
+				synchronized(elementList){
+					update(delta);
+					render();
+				}
 			}
 			// Screen update when every operation is finished.
 			Display.update();
@@ -164,14 +143,17 @@ public class GameWindow {
 
 	private void addElements() {
 		// Add asteroids
-		for (int i = 0; i<10; i++){
-			Asteroid a = new Asteroid(asteroidTexture, asteroidModel, 
-					(float) (-20 + (Math.random() * 40)), (float) (-20 + (Math.random() * 40)), 3f);
+		for (int i = 0; i<Constants.asteroidNumber; i++){
+			Asteroid a = new Asteroid(AssetsProvider.asteroidTexture,
+					AssetsProvider.asteroidModel, 
+					(float) (-20 + (Math.random() * 40)), 
+					(float) (-20 + (Math.random() * 40)), 3f);
 			elementList.add(a);
 		}
 		// Add spaceship
 		if (isServer){
-			Spaceship sp = new Spaceship(spaceShipTexture, spaceShipModel);
+			Spaceship sp = new Spaceship(AssetsProvider.spaceShipTexture, 
+					AssetsProvider.spaceShipModel);
 			elementList.add(sp);
 		}
 	}
@@ -227,6 +209,7 @@ public class GameWindow {
 		Display.destroy();
 		Keyboard.destroy();
 		Mouse.destroy();
+		AL.destroy();
 	}
 
 }

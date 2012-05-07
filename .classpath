@@ -16,5 +16,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/lzma.jar"/>
 	<classpathentry kind="lib" path="res"/>
+	<classpathentry kind="lib" path="lib/slick-util.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

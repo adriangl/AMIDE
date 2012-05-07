@@ -14,6 +14,8 @@ public abstract class GameElement implements GameElementInterface{
 	protected float speedX = 0;
 	protected float speedY = 0;
 	
+	protected int clientID = 0;
+	
 	/** The width of the play area - determined by trying things until it felt right */
 	private static final int PLAY_AREA_WIDTH = 60;
 	/** Half the width of the player area */
@@ -28,6 +30,14 @@ public abstract class GameElement implements GameElementInterface{
 	}
 	public float getY(){
 		return y;
+	}
+	
+	public int getClientID(){
+		return clientID;
+	}
+	
+	public void setClientID(int clientID) {
+		this.clientID = clientID;
 	}
 	
 	public void update (int delta){

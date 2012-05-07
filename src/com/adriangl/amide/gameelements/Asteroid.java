@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.lwjgl.opengl.GL11;
+import org.newdawn.slick.openal.SoundStore;
 
 import testlwjgl.ObjModel;
 import testlwjgl.Texture;
@@ -79,6 +80,12 @@ public class Asteroid extends GameElement {
 		// TODO Auto-generated method stub
 		this.speedX = getX() - other.getX();
 		this.speedY = getY() - other.getY();
+		playSound();
+	}
+
+	private void playSound() {
+		AssetsProvider.asteroidSound.playAsSoundEffect(1.0f, 1.0f, false);
+		SoundStore.get().poll(0);
 	}
 
 	@Override
@@ -92,6 +99,7 @@ public class Asteroid extends GameElement {
         DataOutputStream out = new DataOutputStream(baos);
         
         try {
+        	out.writeFloat(clientID);
 			out.writeFloat(x);
 			out.writeFloat(y);
 	        out.writeFloat(size);

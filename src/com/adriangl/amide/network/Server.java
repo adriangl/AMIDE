@@ -1,11 +1,14 @@
 package com.adriangl.amide.network;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,18 +16,19 @@ import java.util.HashMap;
 import testlwjgl.ObjModel;
 import testlwjgl.Texture;
 
+import com.adriangl.amide.constants.Constants;
 import com.adriangl.amide.gameelements.Asteroid;
 import com.adriangl.amide.gameelements.GameElement;
 import com.adriangl.amide.gameelements.GameElementList;
+import com.adriangl.amide.gameelements.AssetsProvider;
 
 public class Server implements Runnable{
 	
 	private GameElementList gameElements;
-	private static final int SERVER_PORT = 1234;
 	
-	private HashMap<SocketAddress, ArrayList<GameElement>> clientMap;
+	private HashMap<SocketAddress, Integer> clientMap;
 	
-    DatagramPacket data = new DatagramPacket(new byte[284], 284);
+    DatagramPacket data = new DatagramPacket(new byte[Constants.bufferSize], Constants.bufferSize);
     String elementData;
     
     Texture texture;
@@ -35,7 +39,7 @@ public class Server implements Runnable{
 	
 	public Server (GameElementList gameElements){
 		this.gameElements = gameElements;
-		this.clientMap = new HashMap<SocketAddress, ArrayList<GameElement>>();
+		this.clientMap = new HashMap<SocketAddress, Integer>();
 
 		for (int i = 0; i<gameElements.size(); i++){
 			GameElement e = gameElements.get(i);
@@ -51,8 +55,8 @@ public class Server implements Runnable{
 	public void run() {
 		try
         {
-            DatagramSocket socket = new DatagramSocket(SERVER_PORT, InetAddress
-                            .getByName("localhost"));
+            DatagramSocket socket = new DatagramSocket(Constants.SERVER_PORT, InetAddress
+                            .getByName(Constants.SERVER_HOST));
             
             while (true)
             {
@@ -64,36 +68,38 @@ public class Server implements Runnable{
                 // if it exist on the hashmap, we remove the entries from the
                 // hashmap and from the game element's hashmap
                 SocketAddress addr = data.getSocketAddress();
-                ArrayList<GameElement> list = null;
+                int clientID = 0;
                 
                 if (!clientMap.containsKey(addr)){
-                	list = new ArrayList<GameElement>();
-                	clientMap.put(addr, list);
+                	clientID = (int)(10000*Math.random());
+                	clientMap.put(addr, clientID);
                 }
                 else{
-                	list = clientMap.get(addr);
+                	clientID = clientMap.get(addr);
                 }
                 
-                // Remove selected asteroids from big list
-                for (GameElement element: list){
-                	gameElements.remove(element);
-                }
                 
                 // We will now process new entries                
     			ByteArrayInputStream bais = new ByteArrayInputStream(rawData);
     			DataInputStream in = new DataInputStream(bais);
     			
-    			switch((int)in.readFloat()){
-    			case 1:
-    				readAvailableData(in,list);
-    				break;
-    			case 2:
-    				break;
-    			default:
-    				break;
+    			synchronized(gameElements){
+    				// Remove selected asteroids from big list
+                    removeElementsFromList(clientID);
+                    switch((int)in.readFloat()){
+        			case CLIENT_UPDATE:
+        					readAvailableData(in,clientID);
+        					updateCollisions();
+        					sendAsteroids(socket,addr, clientID);
+        				break;
+        			case CLIENT_BYE:
+        				break;
+        			default:
+        				break;
+        			}
+        			in.close();
+        			bais.close();  
     			}
-    			in.close();
-    			bais.close();
                 //(new Thread(new ResponseHandler(gameElements, elementData))).start();
             }
         } catch (Exception e)
@@ -102,10 +108,67 @@ public class Server implements Runnable{
         }
 	}
 
-	private void readAvailableData(DataInputStream in, ArrayList<GameElement> list) {
-		// TODO Auto-generated method stub
-		int floatRead = 0;
+	private void updateCollisions() {
+		for (int i = 0; i<gameElements.size();i++){
+			GameElement element = gameElements.get(i);
+			for (int j = 0; j<gameElements.size();j++){
+				GameElement other = gameElements.get(j);
+				if (!element.equals(other) && element.collides(other)){
+					element.collide(other);
+				}
+			}
+		}
+	}
 
+	private void removeElementsFromList(int clientID) {
+		synchronized(gameElements){
+			ArrayList<GameElement> clientList = getClientList(clientID);
+			gameElements.removeAll(clientList);
+			clientList.clear();
+		}
+	}
+
+	private ArrayList<GameElement> getClientList(int clientID) {
+		ArrayList<GameElement> clientList = new ArrayList<GameElement>();
+		for(int i = 0; i<gameElements.size();i++){
+			GameElement e = gameElements.get(i);
+			if (clientID == e.getClientID()){
+				clientList.add(e);
+			}
+		}
+		return clientList;
+	}
+
+	private void sendAsteroids(DatagramSocket socket, SocketAddress addr, int clientID) 
+			throws IOException {
+		// Encode the asteroids to send
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(Constants.bufferSize);
+		DataOutputStream dos = new DataOutputStream(baos);
+		dos.writeFloat(CLIENT_UPDATE);
+		ArrayList<GameElement> clientList = getClientList(clientID);
+        for (int i = 0; i<clientList.size(); i++) {
+        	GameElement element = clientList.get(i);
+        	if (element instanceof Asteroid){
+        		byte[] encoded = ((Asteroid)element).encode();
+        		baos.write(encoded);
+        	}
+        }
+        
+        byte[] rawData = baos.toByteArray();
+        
+        // Send asteroids
+        DatagramPacket datagram = new DatagramPacket(rawData,
+                rawData.length, addr);
+        
+        socket.send(datagram);
+        baos.close();
+        dos.close();		
+	}
+
+	private void readAvailableData(DataInputStream in, int clientID) {
+		int floatRead = 0;
+		
+		int ID = 0;
 		float x = 0;
 		float y = 0;
 		float size = 0;
@@ -118,30 +181,39 @@ public class Server implements Runnable{
 			while (in.available() > 0) {
 				float elementData = in.readFloat();
 				
-				switch (floatRead % 7){
+				switch (floatRead % Constants.asteroidFields){
 				case 0:
-					x = elementData;
+					ID = (int)elementData;
+					// client has no ID
+					if (ID == 0){
+						ID = clientID;
+					}
 					break;
 				case 1:
-					y = elementData;
+					x = elementData;
 					break;
 				case 2:
-					size = elementData;
+					y = elementData;
 					break;
 				case 3:
-					angle = elementData;
+					size = elementData;
 					break;
 				case 4:
-					speedX = elementData;
+					angle = elementData;
 					break;
 				case 5:
-					speedY = elementData;
+					speedX = elementData;
 					break;
 				case 6:
+					speedY = elementData;
+					break;
+				case 7:
 					rotateSpeed = elementData;
-					Asteroid a = new Asteroid(texture, model, x,y,size,angle,speedX,speedY,rotateSpeed);
+					Asteroid a = new Asteroid(AssetsProvider.asteroidTexture, 
+							AssetsProvider.asteroidModel, x,y,size,angle,speedX,
+							speedY,rotateSpeed);
+					a.setClientID(ID);
 					gameElements.add(a);
-					list.add(a);
 					break;
 				default:
 					break;

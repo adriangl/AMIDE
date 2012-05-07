@@ -1,7 +1,7 @@
 package com.adriangl.amide.gameelements;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 
 public class GameElementList{
 	
@@ -33,6 +33,15 @@ public class GameElementList{
 	
 	public GameElement get(int idx){
 		return elementList.get(idx);
+	}
+	
+	public void clear(){
+		elementList.clear();
+	}
+
+	public void removeAll(Collection<?> c) {
+		elementList.removeAll(c);
+		
 	}
 
 }
