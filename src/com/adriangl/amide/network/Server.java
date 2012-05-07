@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,10 +16,10 @@ import testlwjgl.ObjModel;
 import testlwjgl.Texture;
 
 import com.adriangl.amide.constants.Constants;
+import com.adriangl.amide.gameelements.AssetsProvider;
 import com.adriangl.amide.gameelements.Asteroid;
 import com.adriangl.amide.gameelements.GameElement;
 import com.adriangl.amide.gameelements.GameElementList;
-import com.adriangl.amide.gameelements.AssetsProvider;
 
 public class Server implements Runnable{
 	
@@ -77,7 +76,6 @@ public class Server implements Runnable{
                 else{
                 	clientID = clientMap.get(addr);
                 }
-                
                 
                 // We will now process new entries                
     			ByteArrayInputStream bais = new ByteArrayInputStream(rawData);

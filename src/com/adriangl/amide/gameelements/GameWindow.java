@@ -12,6 +12,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
+import org.newdawn.slick.openal.SoundStore;
 
 import testlwjgl.ObjLoader;
 import testlwjgl.ObjModel;
@@ -108,10 +109,12 @@ public class GameWindow {
 			(new Thread(new Client(elementList))).start();
 		}
 		
+		//AssetsProvider.bgmSound.playAsMusic(1.0f, 1.0f, true);
+		//SoundStore.get().poll(0);
+		
 		while (!finished){
 			// Clear screen
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			GL11.glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
 			
 			// Get difference and current time in millis
 			int delta = (int) (System.currentTimeMillis() - lastLoop);
@@ -180,16 +183,47 @@ public class GameWindow {
 	 */
 	private void render() {
 		// TODO Add render logic for all elements
-		 
 		GL11.glLoadIdentity();
-		GL11.glDisable(GL11.GL_LIGHTING);
 		renderBackground();
 		renderElements();
 	}
 
 	private void renderBackground() {
-		// TODO Add background
+		enterOrtho();
+		GL11.glDisable(GL11.GL_LIGHTING);
+		AssetsProvider.bgTexture.bind();
 		
+		GL11.glBegin(GL11.GL_QUADS);
+			GL11.glTexCoord2f(0,0);
+			GL11.glVertex2i(0,0);
+			GL11.glTexCoord2f(0,1);
+			GL11.glVertex2i(0,SCREEN_HEIGHT);
+			GL11.glTexCoord2f(1,1);
+			GL11.glVertex2i(SCREEN_WIDTH,SCREEN_HEIGHT);
+			GL11.glTexCoord2f(1,0);
+			GL11.glVertex2i(SCREEN_WIDTH,0);
+		GL11.glEnd();
+		leaveOrtho();
+	}
+	
+	public void enterOrtho() {
+		GL11.glPushAttrib(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_ENABLE_BIT);
+		GL11.glPushMatrix();
+		GL11.glLoadIdentity();
+		GL11.glMatrixMode(GL11.GL_PROJECTION); 
+		GL11.glPushMatrix();	
+		
+		GL11.glLoadIdentity();		
+		GL11.glOrtho(0, 800, 600, 0, -1, 1);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glDisable(GL11.GL_LIGHTING);  
+	}
+
+	public void leaveOrtho() {
+		GL11.glPopMatrix();
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glPopMatrix();
+		GL11.glPopAttrib();
 	}
 
 	private void renderElements() {

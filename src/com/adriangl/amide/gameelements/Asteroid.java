@@ -84,7 +84,7 @@ public class Asteroid extends GameElement {
 	}
 
 	private void playSound() {
-		AssetsProvider.asteroidSound.playAsSoundEffect(1.0f, 1.0f, false);
+		AssetsProvider.asteroidSound.playAsSoundEffect(1.0f, 0.5f, false);
 		SoundStore.get().poll(0);
 	}
 

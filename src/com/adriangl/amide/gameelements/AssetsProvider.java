@@ -22,6 +22,10 @@ public class AssetsProvider {
 	public static Audio spaceShipSound;
 	public static Audio asteroidSound;
 	
+	public static Audio bgmSound;
+	
+	public static Texture bgTexture;
+	
 	private static TextureLoader loader = new TextureLoader();
 	
 	public static void loadData(){
@@ -34,11 +38,19 @@ public class AssetsProvider {
 			asteroidTexture = loader.getTexture("asteroid.jpg");
 			spaceShipTexture = loader.getTexture("chocobo.jpg");
 			
+			bgTexture = loader.getTexture("bg.jpg");
+			
 			//Sounds
-			spaceShipSound = AudioLoader.getAudio("WAV", 
-					ResourceLoader.getResourceAsStream("chocobo_sound.wav"));
-			asteroidSound = AudioLoader.getAudio("WAV", 
-					ResourceLoader.getResourceAsStream("rock_sound.wav"));;
+			spaceShipSound = AudioLoader.getAudio("OGG", 
+					ResourceLoader.getResourceAsStream("spaceship_sfx.ogg"));
+			asteroidSound = AudioLoader.getAudio("OGG", 
+					ResourceLoader.getResourceAsStream("asteroid_sfx.ogg"));
+					
+			bgmSound = AudioLoader.getAudio("OGG", 
+					ResourceLoader.getResourceAsStream("bgm.ogg"));
+			
+			
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -2,6 +2,7 @@ package com.adriangl.amide.gameelements;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import org.newdawn.slick.openal.SoundStore;
 
 import testlwjgl.ObjModel;
 import testlwjgl.Texture;
@@ -103,6 +104,12 @@ public class Spaceship extends GameElement {
 	public void collide(GameElementInterface other) {
 		this.speedX = getX() - other.getX();
 		this.speedY = getY() - other.getY();
+		playSound();
+	}
+
+	private void playSound() {
+		AssetsProvider.spaceShipSound.playAsSoundEffect(1.0f, 0.5f, false);
+		SoundStore.get().poll(0);
 	}
 
 	@Override
