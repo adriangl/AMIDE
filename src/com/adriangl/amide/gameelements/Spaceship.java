@@ -4,6 +4,8 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.openal.SoundStore;
 
+import com.adriangl.amide.constants.Constants;
+
 import testlwjgl.ObjModel;
 import testlwjgl.Texture;
 
@@ -20,11 +22,14 @@ public class Spaceship extends GameElement {
 	
 	private float size;
 	
+	private float bulletTimeout;
+	
 	public Spaceship(Texture texture, ObjModel model) {
 		this(texture, model, 0f, 0f, 0.03f, 0f, 0f);
 	}
 	
-	public Spaceship(Texture texture, ObjModel model, float x, float y, float size, float vx, float vy) {
+	public Spaceship(Texture texture, ObjModel model, float x, float y, 
+			float size, float vx, float vy) {
 		this.texture = texture;
 		this.model = model;
 		
@@ -36,11 +41,7 @@ public class Spaceship extends GameElement {
 		this.size = size;
 	}
 	
-	public void update(int delta){
-		// if the player is pushing left or right then rotate the
-		// ship. Note that the amount rotated is scaled by delta, the
-		// amount of time that has passed. This means that rotation
-		// stays framerate independent
+	public void update(int delta, GameElementList list){
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
 			angle += (delta / 5.0f);
 		}
@@ -48,52 +49,56 @@ public class Spaceship extends GameElement {
 			angle -= (delta / 5.0f);
 		}
 
-		// recalculate the forward vector based on the current
-		// ship rotation
 		forwardX = (float) -Math.sin(Math.toRadians(angle));
 		forwardY = (float) Math.cos(Math.toRadians(angle));
 
-		// if the player is pushing the thrust key (up) then
-		// increse the velocity in the direction we're currently
-		// facing
 		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
-			// increase the velocity based on the current forward
-			// vector (note again that this is scaled by delta to
-			// keep us framerate independent)
 			speedX += (forwardX * delta) / 50.0f;
 			speedY += (forwardY * delta) / 50.0f;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)){
 			// TODO Add logic to stop the spaceship
+			speedX -= (forwardX * delta) / 50.0f;
+			speedY -= (forwardY * delta) / 50.0f;
+		}
+		
+		bulletTimeout -= delta;
+		// Generate bullet
+		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
+			if (bulletTimeout <= 0){
+				generateBullet(list);
+				bulletTimeout = Constants.BULLET_TIMEOUT;
+			}
 		}
 
-		// call the update the abstract class to cause our generic
-		// movement and anything else the abstract implementation
-		// provides for us
 		super.update(delta);
 
 	}
 	
+	private void generateBullet(GameElementList list) {
+		// TODO Auto-generated method stub
+		Bullet bullet = new Bullet(AssetsProvider.asteroidTexture, 
+				AssetsProvider.asteroidModel,
+				getX() + forwardX, 
+				getY() + forwardY, 
+				forwardX * 30, 
+				forwardY * 30);
+		list.add(bullet);
+	}
+
 	@Override
 	public void render() {
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glPushMatrix();
 
-		// position the model based on the players currently game
-		// location
 		GL11.glTranslatef(x,y,0);
 		
 		GL11.glRotatef(angle,0,0,1);
 		
-		// rotate the ship round to our current orientation for shooting
-		// GL11.glRotatef(angle,0,0,1);
 		GL11.glRotatef(-90, 1, 0, 0);
-			
-		// scale the model down because its way to big by default
+		
 		GL11.glScalef(size, size, size);
 			
-		// bind to the texture for our model then render it. This 
-		// actually draws the geometry to the screen
 		texture.bind();
 		model.render();
 		
@@ -101,7 +106,7 @@ public class Spaceship extends GameElement {
 	}
 
 	@Override
-	public void collide(GameElementInterface other) {
+	public void collide(GameElementInterface other, GameElementList list) {
 		this.speedX = getX() - other.getX();
 		this.speedY = getY() - other.getY();
 		playSound();

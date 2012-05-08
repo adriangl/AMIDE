@@ -11,7 +11,7 @@ public interface GameElementInterface {
 	 * Update the element's position based on a delta value.
 	 * @param delta Time interval.
 	 */
-	public void update(int delta);
+	public void update(int delta, GameElementList list);
 	
 	/**
 	 * Renders the element.
@@ -39,7 +39,7 @@ public interface GameElementInterface {
 	/**
 	 * Actions to take if the element has collided with others.
 	 */
-	public void collide(GameElementInterface other);
+	public void collide(GameElementInterface other, GameElementList list);
 	
 	/**
 	 * Method which returns the radius of the element.

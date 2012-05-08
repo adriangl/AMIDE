@@ -27,8 +27,8 @@ public class Client implements Runnable{
 	
 	private boolean finished = false;
 	
-	private static final int UPDATES_PER_SECOND = 20;
-	private static final int SLEEP_TIME = 1000/UPDATES_PER_SECOND; //milliseconds
+	private static final float UPDATES_PER_SECOND = 20f;
+	private static final int SLEEP_TIME = (int)(1000/UPDATES_PER_SECOND); //milliseconds
 	
 	private static final int CLIENT_UPDATE = 1;
 	private static final int CLIENT_BYE = 2;

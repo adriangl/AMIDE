@@ -112,7 +112,7 @@ public class Server implements Runnable{
 			for (int j = 0; j<gameElements.size();j++){
 				GameElement other = gameElements.get(j);
 				if (!element.equals(other) && element.collides(other)){
-					element.collide(other);
+					element.collide(other,gameElements);
 				}
 			}
 		}

@@ -47,7 +47,7 @@ public class Asteroid extends GameElement {
 		this.rotateSpeed = rotateSpeed;
 	}
 	
-	public void update(int delta){
+	public void update(int delta, GameElementList list){
 		super.update(delta);
 		angle += (delta / 10.0f) * rotateSpeed;
 	}
@@ -57,18 +57,13 @@ public class Asteroid extends GameElement {
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glPushMatrix();
 
-		// position the model based on the players currently game
-		// location
+		
 		GL11.glTranslatef(x,y,0);
 		
-		// rotate the ship round to our current orientation for shooting
 		GL11.glRotatef(angle,0,0,1);
 			
-		// scale the model down because its way to big by default
 		GL11.glScalef(size, size, size);
 			
-		// bind to the texture for our model then render it. This 
-		// actually draws the geometry to the screen
 		texture.bind();
 		model.render();
 		
@@ -76,7 +71,7 @@ public class Asteroid extends GameElement {
 	}
 
 	@Override
-	public void collide(GameElementInterface other) {
+	public void collide(GameElementInterface other, GameElementList list) {
 		// TODO Auto-generated method stub
 		this.speedX = getX() - other.getX();
 		this.speedY = getY() - other.getY();
@@ -154,6 +149,10 @@ public class Asteroid extends GameElement {
 
 	public void setModel(ObjModel model) {
 		this.model = model;
+	}
+
+	public void removeAsteroid(GameElementList list) {
+		list.remove(this);		
 	}
 
 }

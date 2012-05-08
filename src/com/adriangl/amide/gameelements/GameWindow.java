@@ -171,10 +171,10 @@ public class GameWindow {
 			for (int j = 0; j<elementList.size();j++){
 				GameElement other = elementList.get(j);
 				if (!element.equals(other) && element.collides(other)){
-					element.collide(other);
+					element.collide(other,elementList);
 				}
 			}
-			element.update(delta);
+			element.update(delta, elementList);
 		}
 	}
 	
