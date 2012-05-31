@@ -36,7 +36,7 @@ public class Bullet extends GameElement {
 		}
 	}
 	
-	private void removeBullet(GameElementList list) {
+	void removeBullet(GameElementList list) {
 		list.remove(this);		
 	}
 
@@ -60,7 +60,6 @@ public class Bullet extends GameElement {
 	public void collide(GameElementInterface other, GameElementList list) {
 		// TODO Auto-generated method stub
 		if (other instanceof Asteroid){
-			removeBullet(list);
 			((Asteroid)other).removeAsteroid(list);
 		}
 	}

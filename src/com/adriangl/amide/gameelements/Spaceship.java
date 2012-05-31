@@ -109,7 +109,9 @@ public class Spaceship extends GameElement {
 	public void collide(GameElementInterface other, GameElementList list) {
 		this.speedX = getX() - other.getX();
 		this.speedY = getY() - other.getY();
-		playSound();
+		if (other instanceof Bullet){
+			playSound();
+		}
 	}
 
 	private void playSound() {

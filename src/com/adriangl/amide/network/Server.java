@@ -54,8 +54,7 @@ public class Server implements Runnable{
 	public void run() {
 		try
         {
-            DatagramSocket socket = new DatagramSocket(Constants.SERVER_PORT, InetAddress
-                            .getByName(Constants.SERVER_HOST));
+            DatagramSocket socket = new DatagramSocket(Constants.SERVER_PORT);
             
             while (true)
             {

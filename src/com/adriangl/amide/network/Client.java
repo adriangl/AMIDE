@@ -40,8 +40,7 @@ public class Client implements Runnable{
 	@Override
 	public void run() {
 		try {
-			DatagramSocket socket = new DatagramSocket(CLIENT_PORT, InetAddress
-			                .getByName(Constants.SERVER_HOST));
+			DatagramSocket socket = new DatagramSocket();
 			while(!finished){
 				if (Display.isCloseRequested()){
 					finished = true;

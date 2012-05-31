@@ -76,6 +76,9 @@ public class Asteroid extends GameElement {
 		this.speedX = getX() - other.getX();
 		this.speedY = getY() - other.getY();
 		playSound();
+		if (other instanceof Bullet){
+			removeAsteroid(list);
+		}
 	}
 
 	private void playSound() {
